@@ -5,29 +5,20 @@ var app = builder.Build();
 
 app.Run(static async (HttpContext context) =>
 {
-    if (context.Request.Method == "GET")
+    if (context.Request.Path.StartsWithSegments("/"))
     {
-        if (context.Request.Path.StartsWithSegments("/"))
-        {
-            await context.Response.WriteAsync($"The method is: {context.Request.Method}\r\n");
-            await context.Response.WriteAsync($"The Url is: {context.Request.Path}\r\n");
-            await context.Response.WriteAsync($"\r\n");
+        await context.Response.WriteAsync($"The method is: {context.Request.Method}\r\n");
+        await context.Response.WriteAsync($"The Url is: {context.Request.Path}\r\n");
+        await context.Response.WriteAsync($"\r\n");
 
-            foreach (var key in context.Request.Headers.Keys)
-            {
-                string? Key = null;
-                await context.Response.WriteAsync($"{Key}: {context.Request.Headers[key]}\r\n");
-            }
-        }
-        else if (context.Request.Path.StartsWithSegments("/employees"))
+        foreach (var key in context.Request.Headers.Keys)
         {
-            var employees = EmployeeRepository.GetEmployees();
-
-            foreach (var employee in employees)
-            {
-                await context.Response.WriteAsync($"Id: {employee.Id}, Name: {employee.Name}, Position: {employee.Position}, Salary: {employee.Salary}\r\n");
-            }
+            string? Key = null;
+            await context.Response.WriteAsync($"{Key}: {context.Request.Headers[key]}\r\n");
         }
+    }
+    else if (context.Request.Path.StartsWithSegments("/employees"))
+    {
     }
     else if (context.Request.Method == "POST")
     {

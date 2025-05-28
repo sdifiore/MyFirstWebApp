@@ -4,4 +4,4 @@ Put: Update existing resources on the server
 HTTP Request Headers: Provide additional information to the servers
 
 https://youtu.be/2c99pIfZq1s?si=2Z6gBPGTaHbEVWCC&t=3013
-1:40
+1:44
