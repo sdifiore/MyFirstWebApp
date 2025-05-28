@@ -1,3 +1,4 @@
 ﻿Get: Retrive information from the server
+Post: Create new resources on the server
 
 https://youtu.be/2c99pIfZq1s?si=2Z6gBPGTaHbEVWCC&t=3013

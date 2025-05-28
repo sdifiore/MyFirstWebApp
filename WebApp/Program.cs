@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
@@ -27,6 +29,17 @@ app.Run(async (HttpContext context) =>
             }
         }
     }
+    else if (context.Request.Method == "POST")
+    {
+        if (context.Request.Path.StartsWithSegments("/employees"))
+        {
+            using var reader = new StreamReader(context.Request.Body);
+            var body = await reader.ReadToEndAsync();
+            var employee = JsonSerializer.Deserialize<Employee>(body);
+
+            EmployeeRepository.AddEmployee(employee!);
+        }
+    }
 });
 
 app.Run();
@@ -43,6 +56,14 @@ internal static class EmployeeRepository
     public static IEnumerable<Employee> GetEmployees() => _employees;
 
     public static Employee? GetById(int id) => _employees.FirstOrDefault(e => e.Id == id);
+
+    public static void AddEmployee(Employee employee)
+    {
+        if (employee != null)
+        {
+            _employees.Add(employee);
+        }
+    }
 }
 
 public class Employee
