@@ -3,7 +3,7 @@ using System.Text.Json;
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-app.Run(async (HttpContext context) =>
+app.Run(static async (HttpContext context) =>
 {
     if (context.Request.Method == "GET")
     {
@@ -40,6 +40,34 @@ app.Run(async (HttpContext context) =>
             EmployeeRepository.AddEmployee(employee!);
         }
     }
+    else if (context.Request.Method == "PUT")
+    {
+        // Fix for CS0815: Cannot assign void to an implicitly-typed variable
+        // The issue is that `EmployeeRepository.AddEmployee` returns void, but the code attempts to assign its result to a variable.
+        // To fix this, remove the assignment and directly call the method.
+
+        if (context.Request.Method == "PUT")
+        {
+            if (context.Request.Path.StartsWithSegments("/employees"))
+            {
+                using var reader = new StreamReader(context.Request.Body);
+                var body = await reader.ReadToEndAsync();
+                var employee = JsonSerializer.Deserialize<Employee>(body);
+
+                var result = EmployeeRepository.UpdateEmployee(employee!); // Correct method call for updating an employee
+                if (result)
+                {
+                    context.Response.StatusCode = 200; // OK
+                    await context.Response.WriteAsync("Employee updated successfully.");
+                }
+                else
+                {
+                    context.Response.StatusCode = 404; // Not Found
+                    await context.Response.WriteAsync("Employee not found.");
+                }
+            }
+        }
+    }
 });
 
 app.Run();
@@ -57,12 +85,33 @@ internal static class EmployeeRepository
 
     public static Employee? GetById(int id) => _employees.FirstOrDefault(e => e.Id == id);
 
-    public static void AddEmployee(Employee employee)
+    public static void AddEmployee(Employee? employee)
     {
         if (employee != null)
         {
             _employees.Add(employee);
         }
+    }
+
+    public static bool UpdateEmployee(Employee? employee)
+    {
+        if (employee != null)
+        {
+            var empl = _employees.FirstOrDefault(e => e.Id == employee.Id);
+
+            if (empl != null)
+            {
+                empl.Name = employee.Name;
+                empl.Position = employee.Position;
+                empl.Salary = employee.Salary;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        return false; // Ensure all code paths return a value
     }
 }
 
