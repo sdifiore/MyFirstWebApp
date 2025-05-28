@@ -1,72 +1,11 @@
-using System.Text.Json;
-
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
 app.Run(static async (HttpContext context) =>
 {
-    if (context.Request.Method == "GET")
+    foreach (var key in context.Request.Query.Keys)
     {
-        if (context.Request.Path.StartsWithSegments("/"))
-        {
-            await context.Response.WriteAsync($"The method is: {context.Request.Method}\r\n");
-            await context.Response.WriteAsync($"The Url is: {context.Request.Path}\r\n");
-            await context.Response.WriteAsync($"\r\n");
-
-            foreach (var key in context.Request.Headers.Keys)
-            {
-                string? Key = null;
-                await context.Response.WriteAsync($"{Key}: {context.Request.Headers[key]}\r\n");
-            }
-        }
-        else if (context.Request.Path.StartsWithSegments("/employees"))
-        {
-            var employees = EmployeeRepository.GetEmployees();
-
-            foreach (var employee in employees)
-            {
-                await context.Response.WriteAsync($"Id: {employee.Id}, Name: {employee.Name}, Position: {employee.Position}, Salary: {employee.Salary}\r\n");
-            }
-        }
-    }
-    else if (context.Request.Method == "POST")
-    {
-        if (context.Request.Path.StartsWithSegments("/employees"))
-        {
-            using var reader = new StreamReader(context.Request.Body);
-            var body = await reader.ReadToEndAsync();
-            var employee = JsonSerializer.Deserialize<Employee>(body);
-
-            EmployeeRepository.AddEmployee(employee!);
-        }
-    }
-    else if (context.Request.Method == "PUT")
-    {
-        // Fix for CS0815: Cannot assign void to an implicitly-typed variable
-        // The issue is that `EmployeeRepository.AddEmployee` returns void, but the code attempts to assign its result to a variable.
-        // To fix this, remove the assignment and directly call the method.
-
-        if (context.Request.Method == "PUT")
-        {
-            if (context.Request.Path.StartsWithSegments("/employees"))
-            {
-                using var reader = new StreamReader(context.Request.Body);
-                var body = await reader.ReadToEndAsync();
-                var employee = JsonSerializer.Deserialize<Employee>(body);
-
-                var result = EmployeeRepository.UpdateEmployee(employee!); // Correct method call for updating an employee
-                if (result)
-                {
-                    context.Response.StatusCode = 200; // OK
-                    await context.Response.WriteAsync("Employee updated successfully.");
-                }
-                else
-                {
-                    context.Response.StatusCode = 404; // Not Found
-                    await context.Response.WriteAsync("Employee not found.");
-                }
-            }
-        }
+        await context.Response.WriteAsync($"{key}: {context.Request.Query[key]}\n");
     }
 });
 
